@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { text, varchar, timestamp, pgTable } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { nanoid } from "@/lib/utils";
 
