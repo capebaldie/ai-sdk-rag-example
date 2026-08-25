@@ -1,13 +1,13 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { ToolCall } from "@/components/ToolCall";
+import UserInputForm from "@/components/UserInputForm";
 
 export default function Home() {
-  const [input, setInput] = useState("");
   const { messages, sendMessage, status, error, regenerate, clearError, stop } =
     useChat();
   const busy = status === "submitted" || status === "streaming";
@@ -63,6 +63,8 @@ export default function Home() {
                     );
                   case "tool-addResource":
                   case "tool-getInformation":
+                  case "tool-removeResource":
+                  case "tool-updateResource":
                     return (
                       <ToolCall
                         key={i}
@@ -125,79 +127,12 @@ export default function Home() {
         </div>
       </div>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!input.trim() || busy) return;
-          clearError();
-          sendMessage({ text: input });
-          setInput("");
-        }}
-        className="border-t px-4 py-3"
-      >
-        <div className="mx-auto flex max-w-2xl gap-2">
-          <Input
-            value={input}
-            autoFocus
-            disabled={busy}
-            placeholder={busy ? "Thinking..." : "Say something..."}
-            onChange={(e) => setInput(e.currentTarget.value)}
-          />
-          {busy ? (
-            <Button type="button" variant="outline" onClick={stop}>
-              Stop
-            </Button>
-          ) : (
-            <Button type="submit" disabled={!input.trim()}>
-              Send
-            </Button>
-          )}
-        </div>
-      </form>
+      <UserInputForm
+        busy={busy}
+        clearError={clearError}
+        sendMessage={sendMessage}
+        stop={stop}
+      />
     </div>
-  );
-}
-
-/** Native <details> — no accordion library needed for a disclosure. */
-function ToolCall({
-  name,
-  state,
-  input,
-  output,
-  errorText,
-}: {
-  name: string;
-  state: string;
-  input: unknown;
-  output?: unknown;
-  errorText?: string;
-}) {
-  const failed = state === "output-error";
-  const done = state === "output-available";
-
-  return (
-    <details
-      className={cn(
-        "max-w-[85%] rounded-lg border px-3 py-1.5 text-xs",
-        failed && "border-destructive/50 bg-destructive/10",
-      )}
-    >
-      <summary className="cursor-pointer list-none select-none text-muted-foreground marker:hidden">
-        <span
-          className={cn(
-            "mr-2 inline-block size-1.5 rounded-full align-middle",
-            failed
-              ? "bg-destructive"
-              : done
-                ? "bg-muted-foreground/50"
-                : "animate-pulse bg-foreground",
-          )}
-        />
-        {failed ? `${name} failed` : done ? name : `${name}...`}
-      </summary>
-      <pre className="mt-2 overflow-x-auto text-[11px] text-muted-foreground">
-        {errorText ?? JSON.stringify(output ?? input, null, 2)}
-      </pre>
-    </details>
   );
 }
