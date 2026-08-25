@@ -3,8 +3,11 @@ import { db } from "../db";
 import { google } from "@ai-sdk/google";
 import { cosineDistance, desc, gt, sql } from "drizzle-orm";
 import { embeddings } from "../db/schema/embeddings";
+import { env } from "@/lib/env.mjs";
 
-const embeddingModel = google.embedding("gemini-embedding-001");
+const embeddingModel = google.embedding(
+  env.EMBEDDINGS_MODEL || "gemini-embedding-001",
+);
 
 export const generateChunks = (input: string): string[] => {
   const chunks = input
@@ -46,7 +49,8 @@ export const findRelevantContent = async (userQuery: string) => {
     userQueryEmbedded,
   )})`;
   const similarGuides = await db
-    .select({ name: embeddings.content, similarity })
+    // need id for deletion
+    .select({ name: embeddings.content, id: embeddings.resourceId, similarity })
     .from(embeddings)
     .where(gt(similarity, 0.5))
     .orderBy((t) => desc(t.similarity))

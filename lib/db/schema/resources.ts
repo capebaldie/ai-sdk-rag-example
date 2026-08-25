@@ -28,5 +28,29 @@ export const insertResourceSchema = createSelectSchema(resources)
     updatedAt: true,
   });
 
+// Schema for removing resource based on user query
+export const deleteResourceSchema = z.object({
+  query: z
+    .string()
+    .trim()
+    .min(1)
+    .describe("the information or fact to remove from the knowledge base"),
+});
+
+export const updateResourceSchema = z.object({
+  oldContent: z
+    .string()
+    .trim()
+    .min(1)
+    .describe("the existing information to replace"),
+  newContent: z.string().trim().min(1).describe("the new information to save"),
+});
+
 // Type for resources - used to type API request params and within Components
 export type NewResourceParams = z.infer<typeof insertResourceSchema>;
+
+// Type for removing the resource
+export type DeleteResourceParams = z.infer<typeof deleteResourceSchema>;
+
+// Type for updating resource
+export type UpdateResourceParams = z.infer<typeof updateResourceSchema>;
